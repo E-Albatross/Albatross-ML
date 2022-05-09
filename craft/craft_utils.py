@@ -80,13 +80,14 @@ def adjustResultCoordinates(boxes, ratio_w, ratio_h, ratio_net = 2):
 
 def test_net(net, image, canvas_size, text_threshold, low_text, mag_ratio, cuda):
     # resize
-    img_resized, target_ratio, size_heatmap = imgproc.resize_aspect_ratio(image, canvas_size, interpolation=cv2.INTER_LINEAR, mag_ratio=mag_ratio)
+    img_resized, target_ratio = imgproc.resize_aspect_ratio(image, canvas_size, interpolation=cv2.INTER_LINEAR, mag_ratio=mag_ratio)
     ratio_h = ratio_w = 1 / target_ratio
 
     # preprocessing
     x = imgproc.normalizeMeanVariance(img_resized)
     x = torch.from_numpy(x).permute(2, 0, 1)    # [h, w, c] to [c, h, w]
     x = Variable(x.unsqueeze(0))                # [c, h, w] to [b, c, h, w]
+
     if cuda:
         x = x.cuda()
 
@@ -94,12 +95,13 @@ def test_net(net, image, canvas_size, text_threshold, low_text, mag_ratio, cuda)
     with torch.no_grad():
         y, feature = net(x)
 
-    # make score and link map
+    # make score map
     score_text = y[0,:,:,0].cpu().data.numpy()
-    score_link = y[0,:,:,1].cpu().data.numpy()
 
     boxes= getDetBoxes(score_text, text_threshold, low_text)
+    boxes = np.array(boxes, dtype=np.int32)
+    boxes *= 2 # ratio_net = 2
 
-    boxes= adjustResultCoordinates(boxes, ratio_w, ratio_h).astype(np.int32) # 비율 변경
+    # boxes= adjustResultCoordinates(boxes, ratio_w, ratio_h).astype(np.int32) # 비율 변경
 
     return boxes

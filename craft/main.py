@@ -1,10 +1,12 @@
 import torch
+import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
 import cv2
 
 import craft_utils
-from model import CRAFT
+
+from craft import CRAFT
 
 ## parameters
 craft_model = 'craft_mlt_25k.pth' # pretrained model
@@ -12,11 +14,11 @@ text_threshold = 0.7 # text confidence threshold
 low_text = 0.4
 link_threshold = 0.5
 cuda = False # use cuda for inference
-mag_ratio = 1.5
-border = 10 # 줄 노트 제거 -- 음절 이미지에서 위로 삭제할 크기
+mag_ratio = 1.0
+border = 5
 
-font_images = [] # 폰트 글씨체의 줄 단위 이미지
-user_images = [] # 사용자 글씨의 줄 단위 이미지
+font_images = []
+user_images = []
 syllables = [] # 각 줄에 대한 음절들
 
 ## 이미지 불러오기
@@ -72,7 +74,7 @@ for k, image in enumerate(image_list):
     # 마지막 인덱스
     x, y, w, h = bbox[-1]
     cv2.rectangle(img_, (x, y), (x+w, y + h), color[i % 2], 2)
-    crop = image[border:, x:x+w].copy()
+    crop = image[:, x:x+w].copy()
     cropped_img.append(crop)
 
     syllables.append(cropped_img)
