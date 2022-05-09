@@ -1,7 +1,10 @@
+import time
+
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
+import time
 import cv2
 
 import craft_utils
@@ -26,6 +29,7 @@ img_path = 'test.png'
 
 original_img = cv2.imread(img_path)
 original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+original_img_ = original_img.copy()
 canvas_size = original_img.shape[1]
 
 ## 줄 별로 텍스트 자르기
@@ -33,6 +37,8 @@ height = original_img.shape[0] // 12
 for i in range(0,10,3):
     y = height * i
     fnt = original_img[height*i:height*(i+1),:].copy()
+    original_img_[height*i:height*(i+1),:] = 255
+    original_img_[height*(i+1):height*(i+2),:] = 255
     usr = original_img[height*(i+2):height*(i+3), :].copy()
 
     font_images.append(fnt)
@@ -54,9 +60,31 @@ if cuda:
 
 net.eval()
 
+# load data - 전체 이미지
+start = time.time()
+bbox= craft_utils.test_net(net, original_img_, canvas_size, text_threshold,low_text, mag_ratio,cuda)
+
+img_ = original_img_.copy()
+color = [(0,255,0), (0,0,255)] # bbox 확인용
+for i in range(len(bbox)-1):
+    x, y, w, h = bbox[i]
+    x_next = bbox[i+1][0]
+    if (x+w) > x_next: err = (x+w - x_next) // 2
+    w -= err
+    cv2.rectangle(img_, (x,y), (x+w, y+h), color[i%2], 2) # bbox 확인용
+
+# 마지막 인덱스
+x, y, w, h = bbox[-1]
+cv2.rectangle(img_, (x, y), (x+w, y + h), color[i % 2], 2)
+print("전체 이미지 detect", time.time() - start)
+cv2.imshow('img',img_)
+cv2.waitKey(0)
+
 # load data
 image_list = user_images
 for k, image in enumerate(image_list):
+    start = time.time()
+
     bbox= craft_utils.test_net(net, image, canvas_size, text_threshold,low_text, mag_ratio,cuda)
 
     img_ = image.copy()
@@ -76,6 +104,8 @@ for k, image in enumerate(image_list):
     cv2.rectangle(img_, (x, y), (x+w, y + h), color[i % 2], 2)
     crop = image[:, x:x+w].copy()
     cropped_img.append(crop)
+
+    print(f"line{k} detect", time.time() - start)
 
     syllables.append(cropped_img)
     cv2.imshow('img',img_)
