@@ -30,35 +30,35 @@ class CraftMain():
             new_state_dict[name] = v
         return new_state_dict
 
-# class FPNMain():
-#     def __init__(self, backbone='resnext50', n_class=3):
-#         self.backbone = backbone
-#         self.n_class = n_class
-#         self.model =  FPN(encoder_name=self.backbone,
-#                 decoder_pyramid_channels=256,
-#                 decoder_segmentation_channels=128,
-#                 classes=self.n_class,
-#                 dropout=0.3,
-#                 activation='sigmoid',
-#                 final_upsampling=4,
-#                 decoder_merge_policy='add')## Optimizer 설정
-#
-#     def load_model(self, checkpoint, cuda=False):
-#         if cuda:
-#             state = torch.load(checkpoint)
-#         else:
-#             state = torch.load(checkpoint, map_location=torch.device('cpu'))
-#         self.model.load_state_dict(state['state_dict'])
-#
-#         return self.model
-
-class SegmentationMain():
-    def __init__(self):
-        self.model = smp.FPN(encoder_name="resnext50_32x4d", classes=3)
+class FPNMain():
+    def __init__(self, backbone='resnext50', n_class=3):
+        self.backbone = backbone
+        self.n_class = n_class
+        self.model =  FPN(encoder_name=self.backbone,
+                decoder_pyramid_channels=256,
+                decoder_segmentation_channels=128,
+                classes=self.n_class,
+                dropout=0.3,
+                activation='sigmoid',
+                final_upsampling=4,
+                decoder_merge_policy='add')## Optimizer 설정
 
     def load_model(self, checkpoint, cuda=False):
         if cuda:
             state = torch.load(checkpoint)
         else:
             state = torch.load(checkpoint, map_location=torch.device('cpu'))
-        self.model.load_state_dict(state['model_state_dict'])
+        self.model.load_state_dict(state['state_dict'])
+
+        return self.model
+
+# class SegmentationMain():
+#     def __init__(self):
+#         self.model = smp.FPN(encoder_name="resnext50_32x4d", classes=3)
+#
+#     def load_model(self, checkpoint, cuda=False):
+#         if cuda:
+#             state = torch.load(checkpoint)
+#         else:
+#             state = torch.load(checkpoint, map_location=torch.device('cpu'))
+#         self.model.load_state_dict(state['model_state_dict'])
