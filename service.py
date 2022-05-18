@@ -20,17 +20,17 @@ img_size = (224, 224)
 craft_runner = bentoml.pytorch.load_runner(
     "craft:latest",
 )
-fpn_runner = bentoml.pytorch.load_runner(
-    "fpn:latest"
-)
-# seg_runner = bentoml.pytorch.load_runner(
-#     "segmentation:latest"
+# fpn_runner = bentoml.pytorch.load_runner(
+#     "fpn:latest"
 # )
+seg_runner = bentoml.pytorch.load_runner(
+    "segmentation:latest"
+)
 
 svc = bentoml.Service(
     name="brgs_ai",
     runners=[
-        craft_runner,  fpn_runner
+        craft_runner,  seg_runner
     ],
 )
 
@@ -115,8 +115,8 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
             img_ = syllables_img[idx]
             # print(f'syllable: {num}')
             x = trans(syllable)
-            y = await fpn_runner.async_run(x)
-            # y = await seg_runner.async_run(x)
+            # y = await fpn_runner.async_run(x)
+            y = await seg_runner.async_run(x)
             y = torch.sigmoid(y)
             seg = y.data.numpy()
             seg_result = utils.masks_to_colorimg(seg) # 확인용
