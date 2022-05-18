@@ -23,14 +23,14 @@ craft_runner = bentoml.pytorch.load_runner(
 # fpn_runner = bentoml.pytorch.load_runner(
 #     "fpn:latest"
 # )
-seg_runner = bentoml.pytorch.load_runner(
-    "segmentation:latest"
-)
+# seg_runner = bentoml.pytorch.load_runner(
+#     "segmentation:latest"
+# )
 
 svc = bentoml.Service(
     name="brgs_ai",
     runners=[
-        craft_runner,  seg_runner
+        craft_runner#,  seg_runner
     ],
 )
 
@@ -108,26 +108,26 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
         # 확인용
         # cv2.imwrite(os.path.join(out_dir, f'bad1_{k}.png'), img_)
         #
-        # 음소 분리
-        syllables = np.where(syllables_img < 170, 1, 0).astype(np.float32) # threshold = 200
-        character_in_line = []
-        for idx, syllable in enumerate(syllables):
-            img_ = syllables_img[idx]
-            # print(f'syllable: {num}')
-            x = trans(syllable)
-            # y = await fpn_runner.async_run(x)
-            y = await seg_runner.async_run(x)
-            y = torch.sigmoid(y)
-            seg = y.data.numpy()
-            seg_result = utils.masks_to_colorimg(seg) # 확인용
-            bbox = utils.getDetBoxes_from_seg(syllable, seg)
-            colors = [(255,0,0),(0,0,255),(0,255,0)]
-            character_in_line.append(bbox)
-            # 보정 후 - concat
-            syllable_ = syllable.copy()*255
-            for i, box in enumerate(bbox):
-                x, y, w, h= box
-                cv2.rectangle(syllable_, (x, y), (x + w, y + h), colors[i], 4)  # bbox 확인용
+        # # 음소 분리
+        # syllables = np.where(syllables_img < 170, 1, 0).astype(np.float32) # threshold = 200
+        # character_in_line = []
+        # for idx, syllable in enumerate(syllables):
+        #     img_ = syllables_img[idx]
+        #     # print(f'syllable: {num}')
+        #     x = trans(syllable)
+        #     # y = await fpn_runner.async_run(x)
+        #     y = await seg_runner.async_run(x)
+        #     y = torch.sigmoid(y)
+        #     seg = y.data.numpy()
+        #     seg_result = utils.masks_to_colorimg(seg) # 확인용
+        #     bbox = utils.getDetBoxes_from_seg(syllable, seg)
+        #     colors = [(255,0,0),(0,0,255),(0,255,0)]
+        #     character_in_line.append(bbox)
+        #     # 보정 후 - concat
+        #     syllable_ = syllable.copy()*255
+        #     for i, box in enumerate(bbox):
+        #         x, y, w, h= box
+        #         cv2.rectangle(syllable_, (x, y), (x + w, y + h), colors[i], 4)  # bbox 확인용
 
             # # 보정 후 - not concat
             # for i, bboxes in enumerate(bbox):
@@ -143,14 +143,33 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
             #         print(f'box {box}')
             #         if not box['label']==-1:
             #             x, y, w, h = box['box']
-            #             cv2.rectangle(seg_result, (x, y), (x + w, y + h), colors[i], 2)  # bbox 확인용
+            #  # 음소 분리
+        #         # syllables = np.where(syllables_img < 170, 1, 0).astype(np.float32) # threshold = 200
+        #         # character_in_line = []
+        #         # for idx, syllable in enumerate(syllables):
+        #         #     img_ = syllables_img[idx]
+        #         #     # print(f'syllable: {num}')
+        #         #     x = trans(syllable)
+        #         #     # y = await fpn_runner.async_run(x)
+        #         #     y = await seg_runner.async_run(x)
+        #         #     y = torch.sigmoid(y)
+        #         #     seg = y.data.numpy()
+        #         #     seg_result = utils.masks_to_colorimg(seg) # 확인용
+        #         #     bbox = utils.getDetBoxes_from_seg(syllable, seg)
+        #         #     colors = [(255,0,0),(0,0,255),(0,255,0)]
+        #         #     character_in_line.append(bbox)
+        #         #     # 보정 후 - concat
+        #         #     syllable_ = syllable.copy()*255
+        #         #     for i, box in enumerate(bbox):
+        #         #         x, y, w, h= box
+        #         #         cv2.rectangle(syllable_, (x, y), (x + w, y + h), colors[i], 4)  # bbox 확인용           cv2.rectangle(seg_result, (x, y), (x + w, y + h), colors[i], 2)  # bbox 확인용
             #
             # cv2.imwrite(os.path.join(cout_dir,f'{str(num)}.png'),syllable_)
-            num+=1
-        character_boxes[k] = character_in_line
+            # num+=1
+        # character_boxes[k] = character_in_line
 
     file['syllable']=syllable_boxes
-    file['character']=character_boxes
+    # file['character']=character_boxes
 
     return file
 
