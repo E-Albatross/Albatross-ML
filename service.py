@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torchvision import transforms
 import cv2
-# import os
+import os
 
 from bentoml.io import Image, JSON, Text
 from PIL.Image import Image as PILImage
@@ -41,8 +41,8 @@ trans = transforms.Compose([
   transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) # imagenet
 ])
 # root_dir = './output/fntout'
-# out_dir = os.path.join(root_dir, 'test')
-# cout_dir = os.path.join(out_dir, 'good_2Img')
+# out_dir = os.path.join(root_dir, 'bad1')
+# cout_dir = os.path.join(out_dir, 'line1')
 #
 # if not os.path.exists(out_dir):
 #     os.mkdir(out_dir)
@@ -62,7 +62,7 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
     border = 7
     images=[]   # 줄 단위 이미지
     for i in range(0, 10, 3):
-        usr = image[height * (i) + border:height * (i + 1) - border, :].copy()
+        usr = image[height * (i+2) + border:height * (i + 3) - border, :].copy()
         images.append(usr)
 
     # 음절 분리
@@ -106,7 +106,7 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
         syllable_boxes[k] = bbox
 
         # 확인용
-        # cv2.imwrite(os.path.join(out_dir, f'good2_{k}.png'), img_)
+        # cv2.imwrite(os.path.join(out_dir, f'bad1_{k}.png'), img_)
         #
         # 음소 분리
         syllables = np.where(syllables_img < 170, 1, 0).astype(np.float32) # threshold = 200
@@ -127,7 +127,7 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
             syllable_ = syllable.copy()*255
             for i, box in enumerate(bbox):
                 x, y, w, h= box
-                cv2.rectangle(syllable_, (x, y), (x + w, y + h), colors[i], 2)  # bbox 확인용
+                cv2.rectangle(syllable_, (x, y), (x + w, y + h), colors[i], 4)  # bbox 확인용
 
             # # 보정 후 - not concat
             # for i, bboxes in enumerate(bbox):
@@ -151,15 +151,6 @@ async def predict(f: PILImage) -> "np.ndarray[t.Any, np.dtype[t.Any]]":
 
     file['syllable']=syllable_boxes
     file['character']=character_boxes
-    boundingboxes['1'] = file
 
     return file
 
-@svc.api(input=Text(), output=JSON())
-async def getBbox(key):
-    if key in boundingboxes:
-        bbox = boundingboxes.pop(key)
-        # 딕셔너리 삭제하기
-    else:
-        bbox = None
-    return bbox
