@@ -17,12 +17,12 @@ if __name__ == "__main__":
     cuda = args.cuda and torch.cuda.is_available()
 
     craft = CraftMain()
-    fpn = FPNMain()
+    # fpn = FPNMain()
     seg = SegmentationMain()
 
     # load model
     craft_model = craft.load_model(args.craft_model, cuda)
-    fpn_model = fpn.load_model(args.fpn_model, cuda)
+    # fpn_model = fpn.load_model(args.fpn_model, cuda)
     segmentation_model = seg.load_model(args.seg_model, cuda)
 
     # save model to BentoML's standard format in a local model store
@@ -30,10 +30,10 @@ if __name__ == "__main__":
         "craft",
         craft_model
     )
-    bentoml.pytorch.save(
-        "fpn",
-        fpn_model
-    )
+    # bentoml.pytorch.save(
+    #     "fpn",
+    #     fpn_model
+    # )
     bentoml.pytorch.save(
         "segmentation",
         segmentation_model
